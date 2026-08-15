@@ -5,7 +5,7 @@ Use `op: "list"` to discover peers. Address peers by exact roster ID — NEVER i
 
 Background jobs auto-deliver when they finish. You NEVER need to poll; if `jobs`/`wait` observes a settled job first, that snapshot is the delivery and suppresses duplicate `async-result`.
 
-- **`send`** (with `to`): fire-and-forget, NEVER blocks. Delivery receipts (`delivered`/`failed`) immediate; `failed` → peer gone, don't retry.
+- **`send`** (with `to`): fire-and-forget, NEVER blocks. Batch independent fire-and-forget sends to different peers in one assistant turn; sequence only when a delivery result determines the later send. Delivery receipts (`delivered`/`failed`) immediate; `failed` → peer gone, don't retry.
   Sending wakes `idle`/`parked` peers. Answering: lead with answer, NEVER quote, set `replyTo`.
 - **Format**: plain prose ONLY. No JSON status objects. Share paths via `local://`/`artifact://` URLs, not pasted blobs.
 - **`wait`**: use ONLY when completely blocked with no other work. Returns on the FIRST of: an incoming message, a watched job finishing, the wait window elapsing, or a steering interrupt — NOT when all jobs finish. With no real deadline, set `timeoutMs: 0` for one indefinite wait; NEVER repeat finite waits. Use a finite timeout only when a real deadline matters.
