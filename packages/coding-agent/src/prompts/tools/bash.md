@@ -13,6 +13,8 @@ Use ONLY for one binary or a short pipeline that computes a fact (`wc -l`, `sort
 </instruction>
 
 <critical>
+- NEVER use repeated `date` or status commands to poll readiness, completion, or elapsed time. Use one purpose-built bounded wait or background job instead.
+- One-shot `date` calls for a timestamp are allowed.
 {{#if hasGrep}}- NEVER use shell `grep`/`rg`; use built-in `grep`.{{/if}}
 {{#if hasRead}}{{#if hasGlob}}- List directories with `read` and find paths with `glob`; NEVER use `ls`/`find`.{{/if}}{{/if}}
 - Avoid `head`, `tail`, and redirection: output is captured, truncated, and linked as `artifact://<id>`.
