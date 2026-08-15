@@ -8,6 +8,7 @@ Creates or overwrites file at specified path.
 </conditions>
 
 <critical>
+- MUST batch independent regular-file writes to distinct paths in one assistant turn when every path and complete content are already known. Sequence archive or SQLite writes and any later write when an earlier result determines a later path or content.
 - You SHOULD use Edit tool for modifying existing files
 - You NEVER create documentation files (*.md, README) unless explicitly requested
 - You NEVER use emojis unless requested
