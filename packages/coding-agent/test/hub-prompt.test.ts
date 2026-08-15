@@ -8,6 +8,13 @@ describe("hub prompt", () => {
 		expect(hubDescription).toContain("Use a finite timeout only when a real deadline matters");
 		expect(hubDescription).not.toContain("re-issue to keep waiting");
 	});
+	test("uses automatic delivery instead of repeated jobs polling", () => {
+		expect(hubDescription).toContain("NEVER call `jobs` repeatedly to poll");
+		expect(hubDescription).toContain("rely on auto-delivery");
+		expect(hubDescription).toContain("one `wait` only when completely blocked");
+		expect(hubDescription).toContain("status snapshot of every job");
+	});
+
 
 	test("batches independent fire-and-forget sends to different peers", () => {
 		expect(hubDescription).toContain("Batch independent fire-and-forget sends to different peers");
