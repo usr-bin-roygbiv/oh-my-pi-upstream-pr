@@ -3,8 +3,9 @@ Globs files, directories, and path-backed internal URLs with fast pattern matchi
 <instruction>
 - `path`: glob, file, directory, or path-backed internal URL; separate targets with `;` (`src/**/*.ts; test/**/*.ts`).
 - `memory://` glob patterns are supported. `ssh://` has no local path; use `read`. Other internal URLs accept exact paths only.
-- `gitignore` defaults `true`. Set `false` for ignored files such as `.env*`, logs, or build output.
+- `gitignore` defaults `true`. Set `false` for ignored files such as `.env*`, logs, or build output. Keep `gitignore: true` for broad or multi-target scans; use `false` only for a specific ignored path or tightly scoped ignored subtree.
 - `hidden` defaults `true`; pair it with `gitignore: false` for ignored dotfiles.
+- Scope recursive patterns to the deepest directory already known before widening; walk cost follows directory-tree size, not pattern specificity.
 </instruction>
 
 <output>
