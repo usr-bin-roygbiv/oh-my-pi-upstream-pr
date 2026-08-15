@@ -1,7 +1,7 @@
 Read files, directories, archives, SQLite, images, documents, internal resources, and web URLs via `path`.
 
 <instruction>
-- SHOULD parallelize independent reads.
+- MUST batch independent reads in one assistant turn when all paths and selectors are already known. Sequence only when an earlier result determines a later path or selector.
 - SHOULD use `read` (not browser) for web content; browser only when `read` can't deliver.
 </instruction>
 
