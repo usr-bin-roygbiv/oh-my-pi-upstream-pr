@@ -11,6 +11,12 @@ describe("write prompt", () => {
 		);
 	});
 
+	test("does not repeat an unchanged successful write", () => {
+		expect(writeDescription).toContain("One successful write applies the complete content");
+		expect(writeDescription).toContain("NEVER repeat the same path and content merely to reapply an unchanged result");
+		expect(writeDescription).toContain("intervening state change");
+	});
+
 	test("preserves existing write safety and backend guidance", () => {
 		expect(writeDescription).toContain("Creates or overwrites file at specified path");
 		expect(writeDescription).toContain("You SHOULD use Edit tool for modifying existing files");
