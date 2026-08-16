@@ -1,5 +1,5 @@
 Agent coordination: peer messaging, background-job control, and supervised long-running processes. Main agent is `Main`; subagents inherit task ID.
-Use `op: "list"` to discover peers. Address peers by exact roster ID — NEVER invent names.
+Use `op: "list"` to discover peers. Address peers by exact roster ID — NEVER invent names. If an exact live peer ID is not already in current roster context, run `list` before `send` or filtered `wait`. Never derive a recipient from a task label or historical output.
 
 # Messaging & Jobs
 
