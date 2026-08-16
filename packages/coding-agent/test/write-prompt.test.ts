@@ -17,6 +17,12 @@ describe("write prompt", () => {
 		expect(writeDescription).toContain("intervening state change");
 	});
 
+	test("does not reread authored regular-file content", () => {
+		expect(writeDescription).toContain("After a successful regular-file write, the authored content is the current snapshot");
+		expect(writeDescription).toContain("NEVER read the same path merely to verify unchanged content");
+		expect(writeDescription).toContain("read again only after an intervening command may have changed it");
+	});
+
 	test("preflights xdev schemas before dispatch", () => {
 		expect(writeDescription).toContain("read `xd://<tool>` before first use");
 		expect(writeDescription).toContain("JSON object matching that tool's schema exactly");
