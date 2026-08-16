@@ -1,4 +1,4 @@
-**Tasks: verbatim content strings, NEVER auto-generated IDs; no "task-1"/"task-N". Pass content in `task`.**
+**Tasks: verbatim content strings, NEVER auto-generated IDs; no "task-1"/"task-N". Pass one content in `task`, or an atomic completion batch in `tasks`.**
 
 Each completion: earliest still-open task (phase order) auto-promotes to `in_progress`. Out-of-order completion may move pointer back to an earlier phase—expected; completed tasks NEVER revert.
 
@@ -9,7 +9,7 @@ Each completion: earliest still-open task (phase order) auto-promotes to `in_pro
 |`init`|`list: [{phase, items: string[]}]`|Initialize full list; replaces existing|
 |`init`|`items: string[]`|Flattened single-phase init|
 |`start`|`task`|Mark in progress|
-|`done`|`task` or `phase`|Mark completed|
+|`done`|`task`, `tasks: string[]`, or `phase`|Mark completed; `tasks` validates the whole batch before mutation|
 |`drop`|`task` or `phase`|Mark abandoned|
 |`block`|`task` or `phase`; optional `reason`|Mark blocked: open, awaiting external input; excluded from stop-time incomplete-todo reminder|
 |`unblock`|`task` or `phase`|Blocked task → `pending`|
@@ -26,6 +26,7 @@ Each completion: earliest still-open task (phase order) auto-promotes to `in_pro
 
 - Mark tasks done immediately after finishing; complete phases in order.
 - NEVER make a todo call the turn's only tool call. Batch with real work: `init` with first reads/edits; each `done`/`start` with next action. Solo todo turns waste a round trip.
+- Batch multiple already-completed tasks in one `done` call with `tasks`; NEVER issue sequential Todo calls when all completion targets are known.
 - Waiting on something you can't act on—a user decision, another agent, external service: `block` task (optional `reason`); remains tracked but avoids stop reminder. `unblock` when actionable. If blocker agent-actionable, `append` an unblocking task instead.
 - Keep introduced `task`/`phase` strings stable.
 - Lost exact task text: `view` echoes list; NEVER guess from memory.

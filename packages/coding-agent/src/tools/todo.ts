@@ -79,6 +79,7 @@ const todoSchema = type({
 	op: TodoOp,
 	"list?": InitListEntry.array().describe("phased task list (init)"),
 	"task?": type("string").describe("task content"),
+	"tasks?": type("string").describe("task contents for atomic batch completion (done)").array(),
 	"phase?": type("string").describe("phase name"),
 	// No `atLeastLength(1)` here: `items` is only meaningful for `init`/`append`,
 	// and both enforce non-empty with op-specific errors. A stray `items: []` on
@@ -389,6 +390,32 @@ function getTaskTargets(phases: TodoPhase[], entry: TodoOpEntryValue, errors: st
 	return phases.flatMap(phase => phase.tasks);
 }
 
+function getDoneTargets(phases: TodoPhase[], entry: TodoOpEntryValue, errors: string[]): TodoItem[] {
+	if (entry.tasks === undefined) return getTaskTargets(phases, entry, errors);
+	if (entry.task || entry.phase) {
+		errors.push("done accepts exactly one of task, tasks, or phase");
+		return [];
+	}
+	if (entry.tasks.length === 0) {
+		errors.push("Missing tasks for done operation");
+		return [];
+	}
+
+	const errorCount = errors.length;
+	const seen = new Set<string>();
+	const targets: TodoItem[] = [];
+	for (const content of entry.tasks) {
+		if (seen.has(content)) {
+			errors.push(`Duplicate task "${content}" in done batch`);
+			continue;
+		}
+		seen.add(content);
+		const hit = resolveTaskOrError(phases, content, errors);
+		if (hit) targets.push(hit.task);
+	}
+	return errors.length === errorCount ? targets : [];
+}
+
 /** Phase name for `init` given a flat `items` list with no explicit `phase`. */
 const DEFAULT_INIT_PHASE = "Tasks";
 
@@ -483,6 +510,10 @@ function removeTasks(phases: TodoPhase[], entry: TodoOpEntryValue, errors: strin
 }
 
 function applyEntry(phases: TodoPhase[], entry: TodoOpEntryValue, errors: string[]): TodoPhase[] {
+	if (entry.tasks !== undefined && entry.op !== "done") {
+		errors.push("tasks target is only supported by the done operation");
+		return phases;
+	}
 	switch (entry.op) {
 		case "init":
 			return initPhases(entry, errors);
@@ -500,7 +531,7 @@ function applyEntry(phases: TodoPhase[], entry: TodoOpEntryValue, errors: string
 			return phases;
 		}
 		case "done": {
-			for (const task of getTaskTargets(phases, entry, errors)) {
+			for (const task of getDoneTargets(phases, entry, errors)) {
 				task.status = "completed";
 			}
 			return phases;
@@ -833,6 +864,10 @@ export class TodoTool implements AgentTool<typeof todoSchema, TodoToolDetails> {
 			call: { op: "done", task: "Wire workspace" },
 		},
 		{
+			caption: "Complete multiple tasks atomically",
+			call: { op: "done", tasks: ["Scaffold crate", "Wire workspace"] },
+		},
+		{
 			caption: "Complete a whole phase",
 			call: { op: "done", phase: "Auth" },
 		},
@@ -903,6 +938,7 @@ export class TodoTool implements AgentTool<typeof todoSchema, TodoToolDetails> {
 type TodoRenderOp = {
 	op?: string;
 	task?: string;
+	tasks?: string[];
 	phase?: string;
 	items?: string[];
 };
@@ -1134,6 +1170,9 @@ export const todoToolRenderer = {
 				: opsList.map(e => {
 						const parts = [forDisplay(e.op ?? "update")];
 						if (e.task) parts.push(forDisplay(e.task));
+						if (Array.isArray(e.tasks) && e.tasks.length) {
+							parts.push(`${e.tasks.length} tasks`);
+						}
 						if (e.phase) parts.push(forDisplay(e.phase));
 						if (Array.isArray(e.items) && e.items.length) {
 							parts.push(`${e.items.length} item${e.items.length === 1 ? "" : "s"}`);

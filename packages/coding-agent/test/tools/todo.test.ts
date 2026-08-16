@@ -99,6 +99,63 @@ describe("TodoTool auto-start behavior", () => {
 		}
 		expect(completedSummary.text).toContain("Remaining items: none.");
 	});
+
+	it("atomically completes multiple named tasks and promotes once", async () => {
+		const tool = new TodoTool(createSession());
+		await tool.execute("call-1", {
+			op: "init",
+			list: [{ phase: "Execution", items: ["status", "diagnostics", "verify"] }],
+		});
+
+		const result = await tool.execute("call-2", {
+			op: "done",
+			tasks: ["status", "diagnostics"],
+		} as never);
+
+		expect(result.isError).toBeUndefined();
+		expect(result.details?.phases[0]?.tasks.map(task => task.status)).toEqual([
+			"completed",
+			"completed",
+			"in_progress",
+		]);
+		expect(result.details?.completedTasks).toEqual([
+			{ phase: "Execution", content: "status" },
+			{ phase: "Execution", content: "diagnostics" },
+		]);
+	});
+
+	it("rolls back a completion batch when one target is missing or duplicated", async () => {
+		const tool = new TodoTool(createSession());
+		await tool.execute("call-1", {
+			op: "init",
+			list: [{ phase: "Execution", items: ["status", "diagnostics", "verify"] }],
+		});
+
+		const missing = await tool.execute("call-2", {
+			op: "done",
+			tasks: ["status", "missing"],
+		} as never);
+		expect(missing.isError).toBe(true);
+		expect(missing.details?.phases[0]?.tasks.map(task => task.status)).toEqual(["in_progress", "pending", "pending"]);
+		expect(missing.details?.completedTasks).toBeUndefined();
+
+		const duplicated = await tool.execute("call-3", {
+			op: "done",
+			tasks: ["status", "status"],
+		} as never);
+		expect(duplicated.isError).toBe(true);
+		expect(duplicated.details?.phases[0]?.tasks.map(task => task.status)).toEqual([
+			"in_progress",
+			"pending",
+			"pending",
+		]);
+	});
+
+	it("prompts callers to batch already-completed task transitions", () => {
+		const tool = new TodoTool(createSession());
+		expect(tool.description).toContain("Batch multiple already-completed tasks");
+		expect(tool.description).toContain("one `done` call with `tasks`");
+	});
 });
 
 describe("nextActionableTask", () => {
