@@ -16,4 +16,11 @@ describe("grep prompt", () => {
 		expect(grepDescription).toContain("NEVER guess a search root");
 		expect(grepDescription).toContain("Use `glob` to locate it or search a known parent");
 	});
+
+	test("splits broad independent roots before grepping", () => {
+		expect(grepDescription).toContain(
+			"For broad independent roots, use separate `grep` calls in one assistant turn instead of one semicolon-combined search",
+		);
+		expect(grepDescription).toContain("Keep semicolon paths for small bounded root sets");
+	});
 });
