@@ -23,4 +23,10 @@ describe("grep prompt", () => {
 		);
 		expect(grepDescription).toContain("Keep semicolon paths for small bounded root sets");
 	});
+
+	test("does not repeat unchanged successful searches", () => {
+		expect(grepDescription).toContain("One successful search returns the current matches");
+		expect(grepDescription).toContain("NEVER repeat the same grep merely to re-read unchanged output");
+		expect(grepDescription).toContain("repeat only when searched files may have changed");
+	});
 });
