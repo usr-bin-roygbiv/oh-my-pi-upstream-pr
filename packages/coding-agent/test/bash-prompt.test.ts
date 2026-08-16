@@ -9,4 +9,10 @@ describe("bash prompt", () => {
 		expect(bashDescription).toContain("One-shot `date` calls for a timestamp are allowed");
 		expect(bashDescription).toContain("stat, date, mktemp");
 	});
+
+	test("uses an available dedicated tool instead of shelling out", () => {
+		expect(bashDescription).toContain("When an available dedicated tool covers the operation");
+		expect(bashDescription).toContain("use it instead of shelling out");
+		expect(bashDescription).toContain("Kubernetes tools instead of `kubectl`");
+	});
 });
