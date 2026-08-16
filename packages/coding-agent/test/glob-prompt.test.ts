@@ -16,4 +16,9 @@ describe("glob prompt", () => {
 		expect(globDescription).toContain("start from the deepest parent directory already known to exist");
 		expect(globDescription).toContain("let the pattern discover the unknown suffix");
 	});
+	test("does not repeat unchanged successful globs", () => {
+		expect(globDescription).toContain("One successful glob returns the current matches");
+		expect(globDescription).toContain("NEVER repeat the same glob merely to re-read unchanged results");
+		expect(globDescription).toContain("repeat only when the matched tree may have changed");
+	});
 });

@@ -7,6 +7,7 @@ Globs files, directories, and path-backed internal URLs with fast pattern matchi
 - `hidden` defaults `true`; pair it with `gitignore: false` for ignored dotfiles.
 - NEVER name an unverified deeper search root; start from the deepest parent directory already known to exist and let the pattern discover the unknown suffix.
 - Scope recursive patterns to the deepest directory already known before widening; walk cost follows directory-tree size, not pattern specificity.
+- One successful glob returns the current matches. NEVER repeat the same glob merely to re-read unchanged results; repeat only when the matched tree may have changed.
 </instruction>
 
 <output>
