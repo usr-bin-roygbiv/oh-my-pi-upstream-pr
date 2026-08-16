@@ -8,6 +8,8 @@ Parallelize *within* a cell with `parallel(thunks)`, not by batching.
 
 On error, fix and re-run only the failing step.
 
+NEVER rerun an identical successful cell merely to reproduce its output. Reuse its result while inputs and dependent state are unchanged. Rerun only because dependent state changed or deliberate reinitialization is required.
+
 <prelude>
 {{#ifAll py js}}Python: sync, kwargs. JS: async, ONE trailing object literal, never positional.{{else}}{{#if py}}Sync; kwargs.{{/if}}{{#if js}}Async; ONE trailing object literal, never positional.{{/if}}{{/ifAll}}{{#if rb}} Ruby: sync, kwargs.{{/if}}{{#if jl}} Julia: sync, kwargs.{{/if}}
 ```
