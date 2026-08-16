@@ -28,4 +28,10 @@ describe("read prompt", () => {
 		expect(readDescription).toContain("NEVER use `:-N` or `:raw:-N`");
 		expect(readDescription).toContain("Derive `N` from an observed footer or line count");
 	});
+
+	test("routes conflict inspection without wildcard resources", () => {
+		expect(readDescription).toContain("Use `<file>:conflicts` to list every unresolved block");
+		expect(readDescription).toContain("`conflict://` addresses exactly one known block");
+		expect(readDescription).toContain("NEVER accepts wildcards");
+	});
 });

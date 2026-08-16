@@ -12,6 +12,7 @@ Read files, directories, archives, SQLite, images, documents, internal resources
 - `:raw` — verbatim, no anchors/prefixes | `:2-4:raw` / `:raw:2-4` — range + verbatim
 - Negative line offsets are invalid: NEVER use `:-N` or `:raw:-N`. Use a positive `:N-` range. Derive `N` from an observed footer or line count.
 - `:conflicts` — one line per unresolved git merge conflict block
+- Use `<file>:conflicts` to list every unresolved block. `conflict://` addresses exactly one known block and NEVER accepts wildcards.
 
 ## Source kinds
 - Parseable code, no selector → structural summary (declarations only, body elided). Footer names recovery selector — re-issue ONLY those ranges.
