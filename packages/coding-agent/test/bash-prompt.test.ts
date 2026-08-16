@@ -11,4 +11,9 @@ describe("bash prompt", () => {
 		expect(bashDescription).toContain("NEVER guess a CLI flag");
 		expect(bashDescription).toContain("Inspect the command's `--help` once first");
 	});
+
+	test("sizes predictable finite command deadlines before executing", () => {
+		expect(bashDescription).toContain("set `timeout` on the first call");
+		expect(bashDescription).toContain("NEVER wait for an avoidable timeout and rerun solely to raise it");
+	});
 });
