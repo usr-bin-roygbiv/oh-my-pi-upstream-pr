@@ -11,4 +11,9 @@ describe("grep prompt", () => {
 		);
 		expect(grepDescription).toContain("Open-ended multi-round search MUST use");
 	});
+
+	test("discovers uncertain search roots before grepping", () => {
+		expect(grepDescription).toContain("NEVER guess a search root");
+		expect(grepDescription).toContain("Use `glob` to locate it or search a known parent");
+	});
 });
