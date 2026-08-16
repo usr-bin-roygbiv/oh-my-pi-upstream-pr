@@ -11,4 +11,9 @@ describe("glob prompt", () => {
 		);
 		expect(globDescription).toContain("Set `false` for ignored files such as `.env*`, logs, or build output");
 	});
+	test("anchors uncertain search roots at known existing parents", () => {
+		expect(globDescription).toContain("NEVER name an unverified deeper search root");
+		expect(globDescription).toContain("start from the deepest parent directory already known to exist");
+		expect(globDescription).toContain("let the pattern discover the unknown suffix");
+	});
 });
