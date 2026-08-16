@@ -17,6 +17,12 @@ describe("write prompt", () => {
 		expect(writeDescription).toContain("intervening state change");
 	});
 
+	test("preflights xdev schemas before dispatch", () => {
+		expect(writeDescription).toContain("read `xd://<tool>` before first use");
+		expect(writeDescription).toContain("JSON object matching that tool's schema exactly");
+		expect(writeDescription).toContain("NEVER infer fields from another tool");
+	});
+
 	test("preserves existing write safety and backend guidance", () => {
 		expect(writeDescription).toContain("Creates or overwrites file at specified path");
 		expect(writeDescription).toContain("You SHOULD use Edit tool for modifying existing files");
