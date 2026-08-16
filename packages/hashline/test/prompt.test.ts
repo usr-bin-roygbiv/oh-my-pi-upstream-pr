@@ -13,4 +13,10 @@ describe("edit prompt", () => {
 		expect(editPrompt).toContain("its output is the new snapshot");
 		expect(editPrompt).toContain("never resend the unchanged payload");
 	});
+	test("batches fully known independent file edits", () => {
+		expect(editPrompt).toContain("BATCH INDEPENDENT FILES");
+		expect(editPrompt).toContain("complete anchored hunks for multiple distinct files are already known");
+		expect(editPrompt).toContain("put every file section in one edit payload");
+		expect(editPrompt).toContain("Sequence only when an earlier edit changes a later file, anchor, or hunk");
+	});
 });

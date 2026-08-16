@@ -134,4 +134,5 @@ PUT >20 @fn:
 3. BODY FINAL CONTENT: every row starts `+`; Markdown bullet: `+- item`, not `- item`.
 4. NEVER REPEAT A SUCCESSFUL EDIT: its output is the new snapshot. To make another change, use that output or re-read and construct a new patch; never resend the unchanged payload.
 5. PAYLOAD COMPLETE: starts with `*** Begin Patch`, uses the latest `[PATH#TAG]` for every section, ends with `*** End Patch`, and has no text outside those markers.
+6. BATCH INDEPENDENT FILES: when complete anchored hunks for multiple distinct files are already known, put every file section in one edit payload. Sequence only when an earlier edit changes a later file, anchor, or hunk, or an intervening action determines later content.
 </critical>
