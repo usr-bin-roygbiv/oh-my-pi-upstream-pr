@@ -17,4 +17,9 @@ describe("read prompt", () => {
 		expect(readDescription).toContain("NEVER repeat the same read merely to re-read unchanged output");
 		expect(readDescription).toContain("intervening state change");
 	});
+
+	test("discovers uncertain paths before reading", () => {
+		expect(readDescription).toContain("NEVER guess a path");
+		expect(readDescription).toContain("Use `glob` to locate files or read the known parent directory");
+	});
 });
