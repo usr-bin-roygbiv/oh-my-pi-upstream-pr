@@ -3,6 +3,7 @@ Read files, directories, archives, SQLite, images, documents, internal resources
 <instruction>
 - MUST batch independent reads in one assistant turn when all paths and selectors are already known. Sequence only when an earlier result determines a later path or selector.
 - One successful result is one snapshot. NEVER repeat the same read merely to re-read unchanged output; read again after an intervening state change.
+- Numeric selectors are inclusive. Reuse displayed lines from the current snapshot; for an unchanged file, request only unseen ranges and NEVER issue a selector fully contained in a successful earlier result.
 - NEVER guess a path. Use `glob` to locate files or read the known parent directory before reading an uncertain path.
 - SHOULD use `read` (not browser) for web content; browser only when `read` can't deliver.
 </instruction>

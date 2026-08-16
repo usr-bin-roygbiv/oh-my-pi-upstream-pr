@@ -17,6 +17,11 @@ describe("read prompt", () => {
 		expect(readDescription).toContain("NEVER repeat the same read merely to re-read unchanged output");
 		expect(readDescription).toContain("intervening state change");
 	});
+	test("reuses covered numeric selector ranges", () => {
+		expect(readDescription).toContain("Numeric selectors are inclusive");
+		expect(readDescription).toContain("for an unchanged file, request only unseen ranges");
+		expect(readDescription).toContain("NEVER issue a selector fully contained in a successful earlier result");
+	});
 
 	test("discovers uncertain paths before reading", () => {
 		expect(readDescription).toContain("NEVER guess a path");
