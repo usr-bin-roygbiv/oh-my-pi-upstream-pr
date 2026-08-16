@@ -6,4 +6,9 @@ describe("bash prompt", () => {
 		expect(bashDescription).toContain("NEVER guess an input path");
 		expect(bashDescription).toContain("Use `glob` or read a known parent directory first");
 	});
+
+	test("inspects uncertain CLI flags before executing", () => {
+		expect(bashDescription).toContain("NEVER guess a CLI flag");
+		expect(bashDescription).toContain("Inspect the command's `--help` once first");
+	});
 });
