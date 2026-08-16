@@ -12,6 +12,12 @@ describe("bash prompt", () => {
 		expect(bashDescription).toContain("Inspect the command's `--help` once first");
 	});
 
+
+	test("checks uncertain external executables before dependent work", () => {
+		expect(bashDescription).toContain("NEVER guess that an external executable is installed");
+		expect(bashDescription).toContain("Use `which` once before composing dependent work");
+		expect(bashDescription).toContain("do not run a long command chain that discovers a missing final executable");
+	});
 	test("sizes predictable finite command deadlines before executing", () => {
 		expect(bashDescription).toContain("set `timeout` on the first call");
 		expect(bashDescription).toContain("NEVER wait for an avoidable timeout and rerun solely to raise it");

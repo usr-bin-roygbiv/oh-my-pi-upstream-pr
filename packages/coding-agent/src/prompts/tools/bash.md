@@ -7,6 +7,7 @@ Use ONLY for one binary or a short pipeline that computes a fact (`wc -l`, `sort
 - Set `cwd` instead of `cd`; use `env: { NAME: "…" }` for multiline/quote-heavy values.
 - NEVER guess an input path. Use `glob` or read a known parent directory first when the path is uncertain.
 - NEVER guess a CLI flag. Inspect the command's `--help` once first when its syntax is uncertain.
+- NEVER guess that an external executable is installed. Use `which` once before composing dependent work when availability is uncertain; do not run a long command chain that discovers a missing final executable.
 - `pty: true` only for terminal interaction (`sudo`, `ssh`).
 - Order-dependent commands use `&&` in one call; independent calls may run concurrently.
 - For a predictably long finite command, set `timeout` on the first call. NEVER wait for an avoidable timeout and rerun solely to raise it.
