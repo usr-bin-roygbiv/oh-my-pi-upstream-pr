@@ -5,6 +5,7 @@ Use ONLY for one binary or a short pipeline that computes a fact (`wc -l`, `sort
 
 <instruction>
 - Set `cwd` instead of `cd`; use `env: { NAME: "…" }` for multiline/quote-heavy values.
+- NEVER guess an input path. Use `glob` or read a known parent directory first when the path is uncertain.
 - `pty: true` only for terminal interaction (`sudo`, `ssh`).
 - Order-dependent commands use `&&` in one call; independent calls may run concurrently.
 - Internal URIs (`skill://`, `agent://`, …) auto-resolve to paths.
