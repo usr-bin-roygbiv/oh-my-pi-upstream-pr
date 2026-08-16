@@ -132,5 +132,6 @@ PUT >20 @fn:
 1. RE-GROUND AFTER EVERY EDIT: edits renumber and change `#TAG`; take next numbers from edit response or fresh `read`. Stale tag/surprise: STOP; re-`read`.
 2. RANGES TIGHT: changed lines only. Whole construct: `PUT N*:`.
 3. BODY FINAL CONTENT: every row starts `+`; Markdown bullet: `+- item`, not `- item`.
-4. PAYLOAD COMPLETE: starts with `*** Begin Patch`, uses the latest `[PATH#TAG]` for every section, ends with `*** End Patch`, and has no text outside those markers.
+4. NEVER REPEAT A SUCCESSFUL EDIT: its output is the new snapshot. To make another change, use that output or re-read and construct a new patch; never resend the unchanged payload.
+5. PAYLOAD COMPLETE: starts with `*** Begin Patch`, uses the latest `[PATH#TAG]` for every section, ends with `*** End Patch`, and has no text outside those markers.
 </critical>
