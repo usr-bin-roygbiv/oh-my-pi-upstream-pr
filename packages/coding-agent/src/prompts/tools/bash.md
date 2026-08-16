@@ -16,6 +16,7 @@ Use ONLY for one binary or a short pipeline that computes a fact (`wc -l`, `sort
 - NEVER use repeated `date` or status commands to poll readiness, completion, or elapsed time. Use one purpose-built bounded wait or background job instead.
 - One-shot `date` calls for a timestamp are allowed.
 - When an available dedicated tool covers the operation, use it instead of shelling out (for example, Kubernetes tools instead of `kubectl`).
+- NEVER repeat an identical successful command merely to re-read unchanged output. Repeat only after an intervening state change or when fresh external state is required.
 {{#if hasGrep}}- NEVER use shell `grep`/`rg`; use built-in `grep`.{{/if}}
 {{#if hasRead}}{{#if hasGlob}}- List directories with `read` and find paths with `glob`; NEVER use `ls`/`find`.{{/if}}{{/if}}
 - Avoid `head`, `tail`, and redirection: output is captured, truncated, and linked as `artifact://<id>`.

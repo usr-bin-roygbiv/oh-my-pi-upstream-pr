@@ -15,4 +15,10 @@ describe("bash prompt", () => {
 		expect(bashDescription).toContain("use it instead of shelling out");
 		expect(bashDescription).toContain("Kubernetes tools instead of `kubectl`");
 	});
+
+	test("does not repeat an identical successful command without a state change", () => {
+		expect(bashDescription).toContain("NEVER repeat an identical successful command merely to re-read unchanged output");
+		expect(bashDescription).toContain("intervening state change");
+		expect(bashDescription).toContain("fresh external state is required");
+	});
 });
