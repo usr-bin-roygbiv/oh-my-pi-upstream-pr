@@ -11,4 +11,10 @@ describe("read prompt", () => {
 		);
 		expect(readDescription).not.toContain("SHOULD parallelize independent reads");
 	});
+
+	test("does not repeat an unchanged successful read", () => {
+		expect(readDescription).toContain("One successful result is one snapshot");
+		expect(readDescription).toContain("NEVER repeat the same read merely to re-read unchanged output");
+		expect(readDescription).toContain("intervening state change");
+	});
 });

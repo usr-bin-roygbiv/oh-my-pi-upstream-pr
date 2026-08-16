@@ -2,6 +2,7 @@ Read files, directories, archives, SQLite, images, documents, internal resources
 
 <instruction>
 - MUST batch independent reads in one assistant turn when all paths and selectors are already known. Sequence only when an earlier result determines a later path or selector.
+- One successful result is one snapshot. NEVER repeat the same read merely to re-read unchanged output; read again after an intervening state change.
 - SHOULD use `read` (not browser) for web content; browser only when `read` can't deliver.
 </instruction>
 
