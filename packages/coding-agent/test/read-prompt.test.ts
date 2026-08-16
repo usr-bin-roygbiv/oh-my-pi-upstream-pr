@@ -22,4 +22,10 @@ describe("read prompt", () => {
 		expect(readDescription).toContain("NEVER guess a path");
 		expect(readDescription).toContain("Use `glob` to locate files or read the known parent directory");
 	});
+
+	test("rejects negative line selectors before reading", () => {
+		expect(readDescription).toContain("Negative line offsets are invalid");
+		expect(readDescription).toContain("NEVER use `:-N` or `:raw:-N`");
+		expect(readDescription).toContain("Derive `N` from an observed footer or line count");
+	});
 });
