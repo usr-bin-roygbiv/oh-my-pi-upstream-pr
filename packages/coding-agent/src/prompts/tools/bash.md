@@ -5,6 +5,7 @@ Use ONLY for one binary or a short pipeline that computes a fact (`wc -l`, `sort
 
 <instruction>
 - Set `cwd` instead of `cd`; use `env: { NAME: "…" }` for multiline/quote-heavy values.
+{{#if hasEval}}- NEVER escape an inline program into a Bash command string. If work needs nested quotes or embedded code/data, run the program directly in `eval`.{{/if}}
 - NEVER guess an input path. Use `glob` or read a known parent directory first when the path is uncertain.
 - NEVER guess a CLI flag. Inspect the command's `--help` once first when its syntax is uncertain.
 - NEVER guess that an external executable is installed. Use `which` once before composing dependent work when availability is uncertain; do not run a long command chain that discovers a missing final executable.

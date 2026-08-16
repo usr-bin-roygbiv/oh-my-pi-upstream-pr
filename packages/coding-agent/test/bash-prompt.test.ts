@@ -11,6 +11,11 @@ describe("bash prompt", () => {
 		expect(bashDescription).toContain("NEVER guess a CLI flag");
 		expect(bashDescription).toContain("Inspect the command's `--help` once first");
 	});
+	test("routes nested shell-language layers through eval", () => {
+		expect(bashDescription).toContain("NEVER escape an inline program into a Bash command string");
+		expect(bashDescription).toContain("nested quotes or embedded code/data");
+		expect(bashDescription).toContain("run the program directly in `eval`");
+	});
 
 
 	test("checks uncertain external executables before dependent work", () => {
