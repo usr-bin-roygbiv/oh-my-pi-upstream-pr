@@ -10,15 +10,15 @@ interface DeepSeekBalanceInfo {
 	totalBalance: number;
 }
 
-function parseBalanceAmount(value: unknown): number | undefined {
+function parseBalanceAmount(value: unknown, allowNegative = false): number | undefined {
 	if (typeof value !== "string" || value.trim().length === 0) return undefined;
 	const amount = Number(value);
-	return Number.isFinite(amount) && amount >= 0 ? amount : undefined;
+	return Number.isFinite(amount) && (allowNegative || amount >= 0) ? amount : undefined;
 }
 
 function parseBalanceInfo(value: unknown): DeepSeekBalanceInfo | null {
 	if (!isRecord(value) || typeof value.currency !== "string" || value.currency.trim().length === 0) return null;
-	const totalBalance = parseBalanceAmount(value.total_balance);
+	const totalBalance = parseBalanceAmount(value.total_balance, true);
 	const grantedBalance = parseBalanceAmount(value.granted_balance);
 	const toppedUpBalance = parseBalanceAmount(value.topped_up_balance);
 	if (totalBalance === undefined || grantedBalance === undefined || toppedUpBalance === undefined) return null;

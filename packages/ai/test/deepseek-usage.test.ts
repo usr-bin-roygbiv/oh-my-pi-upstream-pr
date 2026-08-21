@@ -121,6 +121,27 @@ describe("DeepSeek usage provider", () => {
 
 		expect(report?.limits[0]?.status).toBe("exhausted");
 	});
+	it("publishes a negative balance as exhausted instead of dropping the report", async () => {
+		const fetch: FetchImpl = async () =>
+			Response.json({
+				is_available: false,
+				balance_infos: [
+					{
+						currency: "USD",
+						total_balance: "-0.07",
+						granted_balance: "0.00",
+						topped_up_balance: "0.00",
+					},
+				],
+			});
+
+		const report = await deepseekUsageProvider.fetchUsage(params(), { fetch });
+
+		expect(report?.limits[0]).toMatchObject({
+			amount: { remaining: -0.07, unit: "usd" },
+			status: "exhausted",
+		});
+	});
 
 	it("never contacts a DeepSeek-labelled third-party endpoint", async () => {
 		let fetchCalls = 0;
