@@ -1,6 +1,12 @@
 import type { Effort } from "@oh-my-pi/pi-catalog/effort";
 import { toFirepassWireModelId, toFireworksWireModelId } from "@oh-my-pi/pi-catalog/fireworks-model-id";
-import { isGlm52ReasoningEffortModelId, isKimiK3ModelId } from "@oh-my-pi/pi-catalog/identity";
+import { hostMatchesUrl } from "@oh-my-pi/pi-catalog/hosts";
+import {
+	bareModelId,
+	isDeepseekV4FlashModelId,
+	isGlm52ReasoningEffortModelId,
+	isKimiK3ModelId,
+} from "@oh-my-pi/pi-catalog/identity";
 import { getSupportedEfforts } from "@oh-my-pi/pi-catalog/model-thinking";
 import { calculateCost } from "@oh-my-pi/pi-catalog/models";
 import type {
@@ -78,6 +84,7 @@ import {
 	kStreamingLastParseLen,
 	kStreamingPartialJson,
 } from "../utils/block-symbols";
+import { deterministicUuid } from "../utils/deterministic-id";
 import { hasVisibleAssistantContent } from "../utils/empty-completion-retry";
 import type { AssistantMessageEventStream } from "../utils/event-stream";
 import {
@@ -410,6 +417,54 @@ export function applyOpenRouterReportedCost(model: Pick<Model, "provider">, usag
 	usage.cost.total = reportedCost;
 }
 
+const DEEPSEEK_V4_PEAK_TOKEN_RATES = {
+	flash: { cacheHit: 0.014, cacheMiss: 0.44, output: 1.32 },
+	pro: { cacheHit: 0.044, cacheMiss: 1.32, output: 3.96 },
+} as const;
+
+function resolveDeepSeekV4PeakTokenRates(modelId: string) {
+	if (isDeepseekV4FlashModelId(modelId)) return DEEPSEEK_V4_PEAK_TOKEN_RATES.flash;
+	const normalizedModelId = bareModelId(modelId).toLowerCase();
+	return normalizedModelId === "deepseek-v4-pro" || normalizedModelId.startsWith("deepseek-v4-pro-")
+		? DEEPSEEK_V4_PEAK_TOKEN_RATES.pro
+		: undefined;
+}
+
+/**
+ * Replace catalog estimates with DeepSeek V4's recurring UTC-window price.
+ *
+ * Peak windows are 01:00–04:00 and 06:00–10:00 UTC; all other times are 50% off.
+ * Source: https://api-docs.deepseek.com/quick_start/pricing/
+ */
+export function applyDeepSeekV4TimeWindowCost(
+	model: Pick<Model, "id">,
+	baseUrl: string | undefined,
+	usage: Usage,
+	requestStartedAtMs: number | undefined,
+): boolean {
+	if (
+		!isDeepSeekDirectEndpoint(baseUrl) ||
+		typeof requestStartedAtMs !== "number" ||
+		!Number.isFinite(requestStartedAtMs)
+	) {
+		return false;
+	}
+	const rates = resolveDeepSeekV4PeakTokenRates(model.id);
+	if (!rates) return false;
+	const startedAt = new Date(requestStartedAtMs);
+	if (Number.isNaN(startedAt.getTime())) return false;
+	const utcHour = startedAt.getUTCHours();
+	const multiplier = (utcHour >= 1 && utcHour < 4) || (utcHour >= 6 && utcHour < 10) ? 1 : 0.5;
+	const orchestration = usage.orchestration;
+	usage.cost.input = (rates.cacheMiss / 1_000_000) * multiplier * (usage.input + (orchestration?.input ?? 0));
+	usage.cost.output = (rates.output / 1_000_000) * multiplier * (usage.output + (orchestration?.output ?? 0));
+	usage.cost.cacheRead =
+		(rates.cacheHit / 1_000_000) * multiplier * (usage.cacheRead + (orchestration?.cacheRead ?? 0));
+	usage.cost.cacheWrite = (rates.cacheMiss / 1_000_000) * multiplier * usage.cacheWrite;
+	usage.cost.total = usage.cost.input + usage.cost.output + usage.cost.cacheRead + usage.cost.cacheWrite;
+	return true;
+}
+
 export interface OpenAIUsageAccountingInput {
 	promptTokens: number;
 	outputTokens: number;
@@ -448,6 +503,16 @@ export function calculateOpenAIUsageAccounting(accounting: OpenAIUsageAccounting
 		totalTokens: input + accounting.outputTokens + accounting.cachedTokens + cacheWrite,
 		...(accounting.reasoningTokens > 0 ? { reasoningTokens: accounting.reasoningTokens } : {}),
 	};
+}
+
+const DEEPSEEK_USER_ID_HASH_DOMAIN = "omp-deepseek-user-id-v1";
+
+/** Derive DeepSeek's per-session isolation key without putting caller/session data on the wire. */
+export function deriveDeepSeekUserId(sessionId: string | undefined): string | undefined {
+	if (!sessionId) return undefined;
+	const wellFormedSessionId = sessionId.toWellFormed();
+	if (!wellFormedSessionId) return undefined;
+	return `omp_${deterministicUuid(`${DEEPSEEK_USER_ID_HASH_DOMAIN}\0${wellFormedSessionId}`)}`;
 }
 
 /** Normalize a cache identity to the wire limit accepted by OpenAI-family providers. */
@@ -752,6 +817,7 @@ export type OpenAICompletionsParams = Omit<ChatCompletionCreateParamsStreaming, 
 	reasoning_effort?: string | null;
 	service_tier?: ServiceTier;
 	tool_stream?: boolean;
+	user_id?: string;
 	provider?: OpenAICompat["openRouterRouting"];
 	providerOptions?: { gateway?: { only?: string[]; order?: string[] } };
 };
@@ -1166,18 +1232,30 @@ function isZaiReasoningEffortDialect(model: Model<"openai-completions">, compat:
 	return compat.thinkingFormat === "zai" && isGlm52ReasoningEffortModelId(model.id);
 }
 
+const DEEPSEEK_MAX_OUTPUT_TOKENS = 384_000;
+
+/** True only for DeepSeek's first-party API, never merely DeepSeek-labelled compatible hosts. */
+export function isDeepSeekDirectEndpoint(baseUrl: string | undefined): boolean {
+	return hostMatchesUrl(baseUrl, "deepseekDirect");
+}
+
 /**
  * Provider-specific Chat Completions output clamp.
  *
  * Most OpenAI-compatible endpoints retain the conservative 64k ceiling from
- * {@link resolveOpenAIOutputTokenParam}. Z.AI/GLM-5.2 reasoning and native
- * Moonshot K3 explicitly accept their full advertised model caps, so those
- * routes clamp to `model.maxTokens` instead.
+ * {@link resolveOpenAIOutputTokenParam}. The official DeepSeek API accepts up
+ * to 384k output tokens and is bounded by both that documented ceiling and the
+ * model catalog. Z.AI/GLM-5.2 reasoning and native Moonshot K3 similarly accept
+ * their full advertised model caps.
  */
+
 export function resolveOpenAICompletionsOutputClamp(
 	model: Model<"openai-completions">,
 	compat: ResolvedOpenAICompat,
 ): number | undefined {
+	if (isDeepSeekDirectEndpoint(model.baseUrl)) {
+		return Math.min(model.maxTokens ?? OPENAI_MAX_OUTPUT_TOKENS, DEEPSEEK_MAX_OUTPUT_TOKENS);
+	}
 	if (isZaiReasoningEffortDialect(model, compat)) {
 		return model.maxTokens ?? OPENAI_MAX_OUTPUT_TOKENS;
 	}

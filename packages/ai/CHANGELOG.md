@@ -5,6 +5,8 @@
 ### Added
 
 - Added Codex Responses support for Code Mode, preserving tool modes and passing tool namespace metadata during sessions.
+- Added first-party DeepSeek API-key balance reporting from `/user/balance`, including currency-safe remaining balances and exhausted-key status without querying DeepSeek-labelled proxy endpoints.
+- Added stable opaque `user_id` isolation for official DeepSeek Chat Completions sessions without sending raw session or user data to the provider.
 
 ### Fixed
 
@@ -17,6 +19,9 @@
 - Fixed Google Cloud Code Assist and Antigravity rejecting MCP tool schemas with unsupported annotations (`x-mcp-header`, `deprecated`, `readOnly`, `writeOnly`, `$comment`).
 - Fixed Cursor provider issues with native file edit streaming (`editToolCall`) and ensuring always-apply system rules are properly preserved.
 - Fixed Cursor HTTP/2 requests ignoring standard proxy environment variables (`HTTP_PROXY`, `HTTPS_PROXY`, `ALL_PROXY`, `NO_PROXY`).
+- Fixed the official DeepSeek Chat Completions route clamping models with a documented 384k output budget to the generic 64k OpenAI-compatible ceiling; third-party endpoints keep the conservative cap.
+- Fixed official DeepSeek V4 cost estimates to use the documented recurring UTC peak and 50%-discount windows, including cache and provider-orchestration token buckets; proxies and unknown models keep catalog pricing.
+- Fixed official DeepSeek Chat Completions streams losing transport context when the SSE socket closed before `finish_reason`; terminal errors now retain bounded status, request/trace IDs, event progress, and timing diagnostics.
 
 ## [17.4.0] - 2026-08-20
 
